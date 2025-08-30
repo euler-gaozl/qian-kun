@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>乾坤量化</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>乾坤量化</h1>
+
+        <div class="card">
+            <h2>实时策略</h2>
+            <form id="strategy-form">
+                <div class="form-group">
+                    <label for="strategy-instrument">选择品种:</label>
+                    <select id="strategy-instrument" name="instrument_code">
+                        <optgroup label="上海期货交易所 (SHFE)">
+                            <option value="cu">铜</option>
+                            <option value="al">铝</option>
+                            <option value="zn">锌</option>
+                            <option value="pb">铅</option>
+                            <option value="ni">镍</option>
+                            <option value="sn">锡</option>
+                            <option value="au">黄金</option>
+                            <option value="ag">白银</option>
+                            <option value="rb">螺纹钢</option>
+                            <option value="wr">线材</option>
+                            <option value="hc">热轧卷板</option>
+                            <option value="ss">不锈钢</option>
+                            <option value="sc">原油</option>
+                            <option value="fu">燃料油</option>
+                            <option value="bu">石油沥青</option>
+                            <option value="ru">天然橡胶</option>
+                            <option value="sp">纸浆</option>
+                        </optgroup>
+                        <optgroup label="大连商品交易所 (DCE)">
+                            <option value="a">黄大豆1号</option>
+                            <option value="b">黄大豆2号</option>
+                            <option value="m">豆粕</option>
+                            <option value="y">豆油</option>
+                            <option value="p">棕榈油</option>
+                            <option value="c">玉米</option>
+                            <option value="cs">玉米淀粉</option>
+                            <option value="jd">鸡蛋</option>
+                            <option value="i">铁矿石</option>
+                            <option value="j">焦炭</option>
+                            <option value="jm">焦煤</option>
+                            <option value="l">聚乙烯(L)</option>
+                            <option value="v">聚氯乙烯(V)</option>
+                            <option value="pp">聚丙烯(PP)</option>
+                            <option value="eg">乙二醇</option>
+                            <option value="eb">苯乙烯</option>
+                        </optgroup>
+                        <optgroup label="郑州商品交易所 (ZCE)">
+                            <option value="SR">白糖</option>
+                            <option value="CF">棉花</option>
+                            <option value="CY">棉纱</option>
+                            <option value="TA">PTA</option>
+                            <option value="MA">甲醇</option>
+                            <option value="SA">纯碱</option>
+                            <option value="OI">菜籽油</option>
+                            <option value="RM">菜籽粕</option>
+                            <option value="FG">玻璃</option>
+                            <option value="SF">硅铁</option>
+                            <option value="SM">锰硅</option>
+                            <option value="AP">苹果</option>
+                            <option value="CJ">红枣</option>
+                        </optgroup>
+                        <optgroup label="广州期货交易所 (GFEX)">
+                            <option value="si">工业硅</option>
+                            <option value="lc">碳酸锂</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="strategy-contract">具体合约:</label>
+                    <select id="strategy-contract" name="contract" required>
+                        <option value="">请先选择品种</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="strategy-period">周期:</label>
+                    <select id="strategy-period" name="period">
+                        <option value="5m">5分钟</option>
+                        <option value="15m">15分钟</option>
+                        <option value="30m">30分钟</option>
+                        <option value="60m">60分钟</option>
+                        <option value="120m">120分钟</option>
+                        <option value="240m">240分钟</option>
+                        <option value="1d" selected>日</option>
+                        <option value="2d">2日</option>
+                        <option value="1w">周</option>
+                    </select>
+                </div>
+                <button type="submit">执行策略</button>
+            </form>
+            <div id="strategy-result" class="result-box"></div>
+        </div>
+
+        <div class="card">
+            <h2>策略回测</h2>
+            <form id="backtest-form">
+                <div class="form-group">
+                    <label for="backtest-instrument">选择品种:</label>
+                    <select id="backtest-instrument" name="instrument_code">
+                        <optgroup label="上海期货交易所 (SHFE)">
+                            <option value="cu">铜</option>
+                            <option value="al">铝</option>
+                            <option value="zn">锌</option>
+                            <option value="pb">铅</option>
+                            <option value="ni">镍</option>
+                            <option value="sn">锡</option>
+                            <option value="au">黄金</option>
+                            <option value="ag">白银</option>
+                            <option value="rb">螺纹钢</option>
+                            <option value="wr">线材</option>
+                            <option value="hc">热轧卷板</option>
+                            <option value="ss">不锈钢</option>
+                            <option value="sc">原油</option>
+                            <option value="fu">燃料油</option>
+                            <option value="bu">石油沥青</option>
+                            <option value="ru">天然橡胶</option>
+                            <option value="sp">纸浆</option>
+                        </optgroup>
+                        <optgroup label="大连商品交易所 (DCE)">
+                            <option value="a">黄大豆1号</option>
+                            <option value="b">黄大豆2号</option>
+                            <option value="m">豆粕</option>
+                            <option value="y">豆油</option>
+                            <option value="p">棕榈油</option>
+                            <option value="c">玉米</option>
+                            <option value="cs">玉米淀粉</option>
+                            <option value="jd">鸡蛋</option>
+                            <option value="i">铁矿石</option>
+                            <option value="j">焦炭</option>
+                            <option value="jm">焦煤</option>
+                            <option value="l">聚乙烯(L)</option>
+                            <option value="v">聚氯乙烯(V)</option>
+                            <option value="pp">聚丙烯(PP)</option>
+                            <option value="eg">乙二醇</option>
+                            <option value="eb">苯乙烯</option>
+                        </optgroup>
+                        <optgroup label="郑州商品交易所 (ZCE)">
+                            <option value="SR">白糖</option>
+                            <option value="CF">棉花</option>
+                            <option value="CY">棉纱</option>
+                            <option value="TA">PTA</option>
+                            <option value="MA">甲醇</option>
+                            <option value="SA">纯碱</option>
+                            <option value="OI">菜籽油</option>
+                            <option value="RM">菜籽粕</option>
+                            <option value="FG">玻璃</option>
+                            <option value="SF">硅铁</option>
+                            <option value="SM">锰硅</option>
+                            <option value="AP">苹果</option>
+                            <option value="CJ">红枣</option>
+                        </optgroup>
+                        <optgroup label="广州期货交易所 (GFEX)">
+                            <option value="si">工业硅</option>
+                            <option value="lc">碳酸锂</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="backtest-contract">具体合约:</label>
+                    <select id="backtest-contract" name="contract" required>
+                        <option value="">请先选择品种</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="backtest-period">周期:</label>
+                    <select id="backtest-period" name="period">
+                        <option value="5m">5分钟</option>
+                        <option value="15m">15分钟</option>
+                        <option value="30m">30分钟</option>
+                        <option value="60m">60分钟</option>
+                        <option value="120m">120分钟</option>
+                        <option value="240m">240分钟</option>
+                        <option value="1d" selected>日</option>
+                        <option value="2d">2日</option>
+                        <option value="1w">周</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="use-continuous-contract">
+                        <input type="checkbox" id="use-continuous-contract" name="use_continuous_contract">
+                        使用加权合约
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="start-date">开始时间:</label>
+                    <input type="datetime-local" id="start-date" name="start_date" required>
+                </div>
+                <div class="form-group">
+                    <label for="end-date">结束时间:</label>
+                    <input type="datetime-local" id="end-date" name="end_date" required>
+                </div>
+                <div class="form-group">
+                    <label for="initial-capital">初始资金:</label>
+                    <input type="number" id="initial-capital" name="initial_capital" value="1000000" required>
+                </div>
+                <div class="form-group">
+                    <label for="position-sizing-pct">开仓资金比例 (%):</label>
+                    <input type="number" id="position-sizing-pct" name="position_sizing_pct" value="10" min="1" max="100" required>
+                </div>
+                <button type="submit">开始回测</button>
+            </form>
+            <div id="backtest-result" class="result-box"></div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

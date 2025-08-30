@@ -92,37 +92,57 @@ document.addEventListener('DOMContentLoaded', () => {
     const endDateInput = document.getElementById('end-date');
     const initialCapitalInput = document.getElementById('initial-capital');
 
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
-    const oneYearAgo = new Date(today);
-    oneYearAgo.setFullYear(today.getFullYear() - 1);
-    startDateInput.value = oneYearAgo.toISOString().split('T')[0];
-    endDateInput.value = yesterday.toISOString().split('T')[0];
+    const positionSizingPctInput = document.getElementById('position-sizing-pct');
+    const useContinuousContractCheckbox = document.getElementById('use-continuous-contract');
+
+    // 设置默认日期时间
+    function setDefaultDateTime() {
+        const now = new Date();
+        const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate(), 9, 0); // 默认上午9点
+        
+        // 格式化为 YYYY-MM-DDTHH:mm
+        const formatDateTimeLocal = (date) => {
+            const pad = (num) => String(num).padStart(2, '0');
+            return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+        };
+
+        startDateInput.value = formatDateTimeLocal(oneYearAgo);
+        endDateInput.value = formatDateTimeLocal(now);
+    }
+    setDefaultDateTime();
 
     backtestInstrumentSelect.addEventListener('change', (e) => {
         populateContractSelect(e.target.value, backtestContractSelect);
     });
     populateContractSelect(backtestInstrumentSelect.value, backtestContractSelect);
 
+    useContinuousContractCheckbox.addEventListener('change', (e) => {
+        backtestContractSelect.disabled = e.target.checked;
+    });
+
     backtestForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
+        const instrumentCode = backtestInstrumentSelect.value;
         const contract = backtestContractSelect.value;
-        if (!contract) {
-            backtestResult.innerHTML = `<p style="color: red;">请选择一个具体的合约。</p>`;
+        const useContinuous = useContinuousContractCheckbox.checked;
+
+        if (!useContinuous && !contract) {
+            backtestResult.innerHTML = `<p style="color: red;">请选择一个具体的合约，或勾选“使用加权合约”。</p>`;
             return;
         }
 
         const data = {
-            instrument: contract,
+            instrument: useContinuous ? instrumentCode : contract,
             period: backtestPeriodSelect.value,
             start_date: startDateInput.value,
             end_date: endDateInput.value,
-            initial_capital: parseFloat(initialCapitalInput.value)
+            initial_capital: parseFloat(initialCapitalInput.value),
+            position_sizing_pct: parseFloat(positionSizingPctInput.value),
+            use_continuous_contract: useContinuous
         };
 
-        backtestResult.innerHTML = '<p>正在进行回测...</p>';
+        backtestResult.innerHTML = '<p>正在进行专业回测，请稍候...</p>';
 
         try {
             const response = await fetch(`${API_BASE_URL}/backtest`, {
@@ -133,25 +153,52 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await response.json();
             if (!response.ok) throw new Error(result.error || `HTTP 错误! 状态: ${response.status}`);
             
-            let tradesHtml = '<ul>';
-            if (result.trades && result.trades.length > 0) {
-                result.trades.forEach(trade => tradesHtml += `<li>${trade}</li>`);
-            } else {
-                tradesHtml += '<li>无交易记录</li>';
-            }
-            tradesHtml += '</ul>';
+            // --- 渲染新的专业回测报告 ---
+            const kpis = result.kpis;
+            const trades = result.trade_log;
 
-            backtestResult.innerHTML = `
-                <p><strong>合约:</strong> ${result.instrument}</p>
-                <p><strong>时间范围:</strong> ${result.time_range}</p>
-                <p><strong>初始资金:</strong> ${result.initial_capital.toLocaleString()}</p>
-                <p><strong>最终资金:</strong> ${result.final_capital.toLocaleString()}</p>
-                <p><strong>总回报率:</strong> <span style="color: ${result.total_return_pct >= 0 ? 'green' : 'red'};">${result.total_return_pct}%</span></p>
-                <p><strong>夏普比率:</strong> ${result.sharpe_ratio}</p>
-                <p><strong>总交易次数:</strong> ${result.trade_count}</p>
-                <p><strong>最近 ${result.trades.length} 笔交易:</strong></p>
-                ${tradesHtml}
-            `;
+            const kpiNameMap = {
+                "yield_pct": "收益率",
+                "win_rate": "胜率",
+                "profit_loss_ratio": "盈亏比",
+                "sharpe_ratio": "夏普比率",
+                "max_drawdown": "最大回撤",
+                "total_trades": "总交易次数"
+            };
+
+            let kpisHtml = '<h3>关键性能指标 (KPIs)</h3><table class="kpi-table">';
+            for (const [key, value] of Object.entries(kpis)) {
+                const displayName = kpiNameMap[key] || key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                kpisHtml += `<tr><td>${displayName}</td><td>${value}</td></tr>`;
+            }
+            kpisHtml += '</table>';
+
+            let tradesHtml = '<h3>交易日志</h3>';
+            if (trades && trades.length > 0) {
+                tradesHtml += '<table class="trade-log-table"><thead><tr><th>入场时间</th><th>出场时间</th><th>方向</th><th>手数</th><th>入场均价</th><th>出场价</th><th>盈亏</th></tr></thead><tbody>';
+                trades.forEach(trade => {
+                    const profitLossColor = trade.profit_loss >= 0 ? 'green' : 'red';
+                    // 确保显示为中文
+                    const directionDisplay = trade.direction === 'long' ? '多' : (trade.direction === 'short' ? '空' : trade.direction);
+                    tradesHtml += `
+                        <tr>
+                            <td>${new Date(trade.entry_time).toLocaleString()}</td>
+                            <td>${new Date(trade.exit_time).toLocaleString()}</td>
+                            <td>${directionDisplay}</td>
+                            <td>${trade.lots}</td>
+                            <td>${trade.entry_price.toFixed(2)}</td>
+                            <td>${trade.exit_price.toFixed(2)}</td>
+                            <td style="color: ${profitLossColor};">${trade.profit_loss.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+                tradesHtml += '</tbody></table>';
+            } else {
+                tradesHtml += '<p>无交易记录。</p>';
+            }
+
+            backtestResult.innerHTML = kpisHtml + tradesHtml;
+
         } catch (error) {
             backtestResult.innerHTML = `<p style="color: red;">回测失败: ${error.message}</p>`;
         }
