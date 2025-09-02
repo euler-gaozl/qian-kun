@@ -66,6 +66,7 @@
               end-placeholder="结束日期"
               format="YYYY-MM-DD"
               value-format="YYYY-MM-DD"
+              :unlink-panels="true"
             />
           </el-form-item>
         </el-col>
