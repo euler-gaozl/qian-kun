@@ -1,0 +1,44 @@
+# Python 编译文件
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.so
+
+# 项目特定文件
+metadata.json
+
+# 环境变量文件
+.env
+.env.local
+.env.*.local
+
+# IDE 和编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Python 虚拟环境
+venv/
+env/
+ENV/
+.venv
+
+# 依赖目录
+node_modules/
+
+# 构建输出
+dist/
+build/
+*.egg-info/
+
+# 日志文件
+*.log
+
+# 测试覆盖率
+.coverage
+htmlcov/
+.pytest_cache/
