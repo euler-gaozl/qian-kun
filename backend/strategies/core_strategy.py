@@ -53,18 +53,21 @@ class CoreStrategy:
 
         print(market_state, self.position_direction)
         
-        # 生成交易信号
-        if should_close:
-            # 观望且有持仓需要平仓
+        # 生成交易信号 - 注意：平仓优先级最高
+        if should_close and self.position_direction is not None:
+            # 有持仓且需要平仓
+            self.position_direction = None  # 平仓后清除持仓方向
             return SignalType.CLOSE, market_state, "连续性中断，平仓"
         
-        if is_continuous_up:
-            # 连续上涨，开多仓
-            return SignalType.BUY, market_state, f"MA连续{len(ma_list)}次上涨"
-        
-        if is_continuous_down:
-            # 连续下跌，开空仓
-            return SignalType.SELL, market_state, f"MA连续{len(ma_list)}次下跌"
+        # 如果没有持仓，检查开仓条件
+        if self.position_direction is None:
+            if is_continuous_up:
+                # 连续上涨，准备开多仓（注意：这里不立即更新position_direction）
+                return SignalType.BUY, market_state, f"MA连续{len(ma_list)}次上涨"
+            
+            if is_continuous_down:
+                # 连续下跌，准备开空仓（注意：这里不立即更新position_direction）
+                return SignalType.SELL, market_state, f"MA连续{len(ma_list)}次下跌"
         
         # 默认观望
         return SignalType.HOLD, market_state, "不满足开仓条件"
@@ -72,48 +75,54 @@ class CoreStrategy:
     def _check_continuous_up(self, ma_list: List[float]) -> bool:
         """
         检查是否连续上涨
-        要求：每个MA值都严格大于前一个
+        要求：从索引5开始，每个MA值都严格大于前一个
+        ma_list[0]是最远的，ma_list[-1]是最近的
         """
-        if len(ma_list) < 2:
+        if len(ma_list) < 6:
             return False
         
-        for i in range(5, len(ma_list)-1):
-            if ma_list[i] >= ma_list[i+1]:
+        # 从索引5开始检查到最后，每个都要比前一个大（从远到近递增）
+        for i in range(5, len(ma_list) - 1):
+            if ma_list[i] >= ma_list[i + 1]:  # 如果不是严格递增
                 return False
         return True
     
     def _check_continuous_down(self, ma_list: List[float]) -> bool:
         """
         检查是否连续下跌
-        要求：每个MA值都严格小于前一个
+        要求：从索引5开始，每个MA值都严格小于前一个
+        ma_list[0]是最远的，ma_list[-1]是最近的
         """
-        if len(ma_list) < 2:
+        if len(ma_list) < 6:
             return False
         
-        for i in range(5, len(ma_list)-1):
-            if ma_list[i] <= ma_list[i+1]:
+        # 从索引5开始检查到最后，每个都要比前一个小（从远到近递减）
+        for i in range(5, len(ma_list) - 1):
+            if ma_list[i] <= ma_list[i + 1]:  # 如果不是严格递减
                 return False
         return True
     
     def _check_should_close(self, ma_list: List[float]) -> bool:
         """
         检查是否应该平仓
-        条件：连续两次停顿或反向（ma[0] <= ma[1] 且 ma[1] <= ma[2]）
+        条件：连续两次停顿或反向
+        ma_list[-1]是最新的，ma_list[-2]是次新的，ma_list[-3]是第三新的
+        多仓：最新 <= 次新 且 次新 <= 第三新（连续两次不涨）
+        空仓：最新 >= 次新 且 次新 >= 第三新（连续两次不跌）
         """
         if len(ma_list) < 3:
             return False
         
-        # 检查最近的3个MA值
-        recent = ma_list[-3:]
-        
         # 如果当前有多仓，检查是否出现连续两次非上涨
         if self.position_direction == 'long':
-            if recent[2] <= recent[1] and recent[1] <= recent[0]:
+            # 最新 <= 次新 且 次新 <= 第三新
+            if ma_list[-1] <= ma_list[-2] and ma_list[-2] <= ma_list[-3]:
                 return True
         
         # 如果当前有空仓，检查是否出现连续两次非下跌
         if self.position_direction == 'short':
-            if recent[2] >= recent[1] and recent[1] >= recent[0]:
+            # 最新 >= 次新 且 次新 >= 第三新
+            if ma_list[-1] >= ma_list[-2] and ma_list[-2] >= ma_list[-3]:
                 return True
         
         return False

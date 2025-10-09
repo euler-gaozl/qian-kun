@@ -157,25 +157,33 @@ class BacktestSystemController:
                 # 检查MA价格是否在K线高低范围内（回踩条件）
                 ma_price = ma_values_for_signal[-1]
                 if current_kline['low'] <= ma_price <= current_kline['high']:
-                    self.portfolio_manager.open_position(
+                    trade = self.portfolio_manager.open_position(
                         symbol=symbol,
                         contract=contract,
                         direction='long',
                         price=ma_price,
                         timestamp=current_time
                     )
+                    # 只有开仓成功后才更新策略的持仓方向
+                    if trade is not None:
+                        self.core_strategy.position_direction = 'long'
+                        logger.info(f"开多仓成功，更新持仓方向为long")
                     
             elif signal_type == SignalType.SELL:
                 # 检查MA价格是否在K线高低范围内
                 ma_price = ma_values_for_signal[-1]
                 if current_kline['low'] <= ma_price <= current_kline['high']:
-                    self.portfolio_manager.open_position(
+                    trade = self.portfolio_manager.open_position(
                         symbol=symbol,
                         contract=contract,
                         direction='short',
                         price=ma_price,
                         timestamp=current_time
                     )
+                    # 只有开仓成功后才更新策略的持仓方向
+                    if trade is not None:
+                        self.core_strategy.position_direction = 'short'
+                        logger.info(f"开空仓成功，更新持仓方向为short")
                     
             elif signal_type == SignalType.CLOSE:
                 # 以收盘价平仓
@@ -184,6 +192,9 @@ class BacktestSystemController:
                         price=current_kline['close'],
                         timestamp=current_time
                     )
+                    # 平仓成功后清除策略的持仓方向
+                    self.core_strategy.position_direction = None
+                    logger.info(f"平仓成功，清除持仓方向")
         
         # 回测结束时，如果还有持仓，以最后一根K线的收盘价平仓
         if self.portfolio_manager.current_position:
@@ -193,4 +204,6 @@ class BacktestSystemController:
                 price=last_kline['close'],
                 timestamp=last_time
             )
+            # 清除策略中的持仓方向
+            self.core_strategy.position_direction = None
             logger.info("回测结束，平仓所有持仓")
