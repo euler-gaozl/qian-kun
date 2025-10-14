@@ -8,6 +8,10 @@ __pycache__/
 # 项目特定文件
 metadata.json
 
+# 依赖安装标记文件
+.deps_installed
+.frontend_deps_installed
+
 # 环境变量文件
 .env
 .env.local
@@ -36,6 +40,7 @@ build/
 *.egg-info/
 
 # 日志文件
+logs/
 *.log
 
 # 测试覆盖率

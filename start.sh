@@ -49,18 +49,34 @@ if [ ! -f "backend/requirements.txt" ]; then
 fi
 
 # 检查 Python 虚拟环境
-if [ ! -d "venv" ] && [ ! -d ".venv" ]; then
+VENV_EXISTS=false
+if [ -d "venv" ]; then
+    source venv/bin/activate
+    VENV_EXISTS=true
+elif [ -d ".venv" ]; then
+    source .venv/bin/activate
+    VENV_EXISTS=true
+fi
+
+# 如果虚拟环境不存在,创建并安装依赖
+if [ "$VENV_EXISTS" = false ]; then
     echo "📦 首次运行: 创建Python虚拟环境..."
     python3 -m venv venv
     source venv/bin/activate
     echo "📦 安装后端依赖..."
-    pip install -r backend/requirements.txt
+    pip install -q -r backend/requirements.txt
+    echo "✅ 后端依赖安装完成"
 else
-    # 激活虚拟环境
-    if [ -d "venv" ]; then
-        source venv/bin/activate
+    # 虚拟环境存在,检查是否需要更新依赖
+    # 通过比较requirements.txt修改时间和标记文件来判断
+    DEPS_MARKER=".deps_installed"
+    if [ ! -f "$DEPS_MARKER" ] || [ "backend/requirements.txt" -nt "$DEPS_MARKER" ]; then
+        echo "📦 检测到依赖变更,更新后端依赖..."
+        pip install -q -r backend/requirements.txt
+        touch "$DEPS_MARKER"
+        echo "✅ 后端依赖更新完成"
     else
-        source .venv/bin/activate
+        echo "✅ 后端依赖已就绪(跳过安装)"
     fi
 fi
 
@@ -84,9 +100,19 @@ echo "----------------------------------------"
 
 # 检查前端依赖
 cd frontend
+FRONTEND_DEPS_MARKER="../.frontend_deps_installed"
 if [ ! -d "node_modules" ]; then
     echo "📦 首次运行: 安装前端依赖..."
     npm install
+    touch "$FRONTEND_DEPS_MARKER"
+    echo "✅ 前端依赖安装完成"
+elif [ ! -f "$FRONTEND_DEPS_MARKER" ] || [ "package.json" -nt "$FRONTEND_DEPS_MARKER" ]; then
+    echo "📦 检测到依赖变更,更新前端依赖..."
+    npm install
+    touch "$FRONTEND_DEPS_MARKER"
+    echo "✅ 前端依赖更新完成"
+else
+    echo "✅ 前端依赖已就绪(跳过安装)"
 fi
 
 # 启动前端

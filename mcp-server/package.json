@@ -1,0 +1,32 @@
+{
+  "name": "qiankun-strategy-server",
+  "version": "0.1.0",
+  "description": "MCP server for querying Qiankun futures trading strategy signals",
+  "type": "module",
+  "main": "build/index.js",
+  "bin": {
+    "qiankun-strategy-server": "build/index.js"
+  },
+  "scripts": {
+    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
+    "watch": "tsc --watch",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "futures",
+    "trading",
+    "strategy"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "axios": "^1.7.9",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "typescript": "^5.7.3"
+  }
+}

@@ -22,6 +22,12 @@
 - 权益曲线图表
 - 完整的交易记录
 
+### 3. MCP服务器（AI对话集成）
+- 支持通过LLM对话查询策略信号
+- 批量查询多个品种/合约/周期
+- 自然语言交互
+- 多轮持续查询
+
 ## 快速开始
 
 ### 🚀 一键启动（推荐）
@@ -114,6 +120,100 @@ npm run dev
    - 权益曲线图
    - 详细交易记录
 
+## MCP服务器使用
+
+### 什么是MCP服务器？
+
+MCP (Model Context Protocol) 服务器让你可以在LLM对话工具中直接查询策略信号，无需打开网页界面。
+
+### 团队成员安装MCP (推荐)
+
+MCP服务器已包含在项目中，位于 `mcp-server/` 目录。
+
+**一键安装:**
+```bash
+cd mcp-server
+./install-mcp.sh
+```
+
+**安装脚本特性:**
+- ✅ 自动检测项目路径(无需手动配置)
+- ✅ 自动安装依赖和编译
+- ✅ 支持配置到Kilo或Claude Desktop
+- ✅ 支持自定义API地址(本地/远程)
+- ✅ 智能合并现有配置
+
+**使用流程:**
+1. 克隆项目: `git clone <项目地址>`
+2. 安装MCP: `cd mcp-server && ./install-mcp.sh`
+3. 选择配置选项(Kilo/Claude/两者)
+4. 输入API地址(默认localhost:8000)
+5. 重启对应的AI应用
+6. 开始使用!
+
+### 手动配置说明
+
+如需手动配置，配置文件位置:
+```
+~/Library/Application Support/Code/User/globalStorage/shengsuan-cloud.kilo-ssy/settings/mcp_settings.json
+```
+
+配置示例(需要修改路径为你的项目路径):
+```json
+{
+  "mcpServers": {
+    "qiankun-strategy": {
+      "command": "node",
+      "args": ["<你的项目路径>/mcp-server/build/index.js"],
+      "env": {
+        "QIANKUN_API_URL": "http://localhost:8000"
+      }
+    }
+  }
+}
+```
+
+### 使用示例
+
+在支持MCP的LLM对话工具中，你可以用自然语言查询：
+
+**单品种多周期查询：**
+```
+你: 帮我看一下螺纹钢rb2505在15分钟、30分钟、60分钟的策略信号
+
+返回: 自动批量查询三个周期的信号并展示
+```
+
+**多品种查询：**
+```
+你: 同时查一下rb2501、i2505、hc2501的日线信号
+
+返回: 批量查询三个品种的信号
+```
+
+**持续多轮查询：**
+```
+你: 先看rb2501的15分钟信号
+→ [返回结果]
+
+你: 再看30分钟和60分钟的
+→ [追加查询]
+
+你: 顺便看一下i2505的日线
+→ [继续追加]
+```
+
+### MCP服务器开发
+
+如需修改MCP服务器代码：
+
+```bash
+cd mcp-server
+npm run build  # 重新编译
+```
+
+详细文档见：[`mcp-server/README.md`](mcp-server/README.md)
+
 ## 项目结构
 
 ```
@@ -135,6 +235,11 @@ qian-kun/
 │   │       ├── BacktestSystem.vue    # 回测系统
 │   │       └── BacktestReport.vue    # 回测报告
 │   └── package.json
+├── mcp-server/                  # MCP服务器
+│   ├── src/                     # TypeScript源码
+│   ├── build/                   # 编译输出
+│   ├── package.json
+│   └── README.md
 └── README.md
 ```
 
