@@ -76,6 +76,20 @@ class RealtimeStrategyController:
                 action = "观望"
                 price = 0.0
                 signal_strength = "弱"
+            # 计算平仓价（实时数据，无延迟）
+            close_price = None
+            ma16_current, ma15_current = self.kline_service.get_close_price_data(
+                symbol=full_symbol,
+                period=request.period,
+                ma_period=request.ma_period
+            )
+            
+            if ma16_current is not None and ma15_current is not None:
+                # 公式：MA16 × 16 = MA15 × 15 + X
+                # 反解：X = MA16 × 16 - MA15 × 15
+                close_price = ma16_current * request.ma_period - ma15_current * (request.ma_period - 1)
+                logger.info(f"计算平仓价(实时): ma16={ma16_current:.2f}, ma15={ma15_current:.2f}, close_price={close_price:.2f}")
+            
             
             # 构造响应
             response = RealtimeStrategyResponse(
@@ -85,7 +99,8 @@ class RealtimeStrategyController:
                 price=round(price, 2) if price > 0 else 0.0,
                 timestamp=datetime.now().isoformat(),
                 ma_value=round(ma_values[-1], 2) if ma_values else None,
-                signal_strength=signal_strength
+                signal_strength=signal_strength,
+                close_price=round(close_price, 2) if close_price else None
             )
             
             logger.info(f"生成信号: {action} @ {response.price}, 原因: {reason}")

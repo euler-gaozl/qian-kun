@@ -13,6 +13,7 @@ class RealtimeStrategyResponse(BaseModel):
     timestamp: str = Field(..., description="信号生成时间")
     ma_value: Optional[float] = Field(None, description="当前MA值")
     signal_strength: Optional[str] = Field(None, description="信号强度")
+    close_price: Optional[float] = Field(None, description="建议平仓价")
 
 
 class TradeRecord(BaseModel):

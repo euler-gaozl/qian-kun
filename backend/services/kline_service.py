@@ -45,6 +45,39 @@ class KlineService:
             logger.error(f"获取K线数据失败: {e}")
             return []
     
+    def get_close_price_data(self, symbol: str, period: str, ma_period: int = 16) -> tuple:
+        """
+        获取计算平仓价所需的数据（实时版本）
+        
+        Args:
+            symbol: 完整的合约代码
+            period: 周期
+            ma_period: MA周期，默认16
+            
+        Returns:
+            (ma16_current, ma15_current) - 当前K线的MA16和MA15平均值
+        """
+        try:
+            # 获取足够的K线数据
+            df = self._fetch_klines(symbol, period, ma_period * 2)
+            if df.empty or len(df) < ma_period:
+                logger.warning(f"数据不足，无法计算平仓价: {symbol}")
+                return None, None
+            
+            # 计算MA16（使用最新K线，实时数据）
+            ma16 = df['close'].rolling(window=ma_period).mean()
+            ma16_current = ma16.iloc[-1] if len(ma16) >= 1 else None
+            
+            # 计算MA15（使用最新K线，实时数据）
+            ma15 = df['close'].rolling(window=ma_period-1).mean()
+            ma15_current = ma15.iloc[-1] if len(ma15) >= 1 else None
+            
+            return ma16_current, ma15_current
+            
+        except Exception as e:
+            logger.error(f"获取平仓价数据失败: {e}")
+            return None, None
+    
     def get_historical_klines(self, symbol: str, period: str, start_date: str, end_date: str) -> pd.DataFrame:
         """
         获取历史K线数据

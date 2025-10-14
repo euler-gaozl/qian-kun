@@ -24,11 +24,46 @@
 
 ## 快速开始
 
-### 后端启动
+### 🚀 一键启动（推荐）
 
-1. 激活conda环境：
+**macOS/Linux系统：**
 ```bash
-conda activate qiankun
+# 启动前后端服务
+./start.sh
+
+# 停止所有服务
+./stop.sh
+```
+
+启动脚本会自动：
+- ✅ 检查并创建Python虚拟环境
+- ✅ 安装所有依赖（首次运行）
+- ✅ 同时启动后端和前端服务
+- ✅ 检测端口占用并提示
+- ✅ 后台运行，生成日志文件
+
+访问地址：
+- 前端界面: http://localhost:5173
+- 后端API: http://localhost:8000
+- API文档: http://localhost:8000/docs
+
+查看日志：
+```bash
+# 查看后端日志
+tail -f logs/backend.log
+
+# 查看前端日志
+tail -f logs/frontend.log
+```
+
+### 📝 手动启动（备选方案）
+
+#### 后端启动
+
+1. 创建并激活虚拟环境：
+```bash
+python3 -m venv venv
+source venv/bin/activate  # macOS/Linux
 ```
 
 2. 安装依赖：
@@ -39,13 +74,13 @@ pip install -r requirements.txt
 
 3. 启动API服务：
 ```bash
-python main.py
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 API将在 http://localhost:8000 启动
 API文档地址: http://localhost:8000/docs
 
-### 前端启动
+#### 前端启动
 
 1. 安装依赖：
 ```bash
