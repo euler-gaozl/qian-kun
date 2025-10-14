@@ -80,8 +80,11 @@
             {{ result.action }}
           </el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="建议价格">
+        <el-descriptions-item label="建议开仓价">
           {{ result.price > 0 ? result.price.toFixed(2) : '市价' }}
+        </el-descriptions-item>
+        <el-descriptions-item label="建议平仓价">
+          {{ result.close_price ? result.close_price.toFixed(2) : '-' }}
         </el-descriptions-item>
         <el-descriptions-item label="MA值">
           {{ result.ma_value ? result.ma_value.toFixed(2) : '-' }}
