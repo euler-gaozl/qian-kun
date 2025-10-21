@@ -52,8 +52,7 @@ class RealtimeStrategyController:
                     action="观望",
                     price=0.0,
                     timestamp=datetime.now().isoformat(),
-                    ma_value=ma_values[-1] if ma_values else None,
-                    signal_strength="弱"
+                    ma_value=ma_values[-1] if ma_values else None
                 )
             
             # 调用策略生成信号
@@ -63,19 +62,15 @@ class RealtimeStrategyController:
             if signal_type == SignalType.BUY:
                 action = "多"
                 price = ma_values[-1]  # 使用最新的MA值作为建议价格
-                signal_strength = "强"
             elif signal_type == SignalType.SELL:
                 action = "空"
                 price = ma_values[-1]
-                signal_strength = "强"
             elif signal_type == SignalType.CLOSE:
                 action = "平仓"
                 price = 0.0  # 市价平仓
-                signal_strength = "中"
             else:  # HOLD
                 action = "观望"
                 price = 0.0
-                signal_strength = "弱"
             # 计算平仓价（实时数据，无延迟）
             close_price = None
             ma16_current, ma15_current = self.kline_service.get_close_price_data(
@@ -99,7 +94,6 @@ class RealtimeStrategyController:
                 price=round(price, 2) if price > 0 else 0.0,
                 timestamp=datetime.now().isoformat(),
                 ma_value=round(ma_values[-1], 2) if ma_values else None,
-                signal_strength=signal_strength,
                 close_price=round(close_price, 2) if close_price else None
             )
             

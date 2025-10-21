@@ -47,3 +47,34 @@ logs/
 .coverage
 htmlcov/
 .pytest_cache/
+
+# 环境变量文件（具体路径）
+mcp-server/.env
+backend/.env
+
+# AI 相关缓存
+.ai_cache/
+mcp-server/.ai_cache/
+
+# 临时文件
+*.tmp
+*.temp
+
+# 操作系统文件（Windows）
+Thumbs.db
+
+# Python 额外忽略项
+*.py[cod]
+*$py.class
+.Python
+
+# Node.js 额外日志
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# TypeScript
+*.tsbuildinfo
+mcp-server/build/
+mcp-server/dist/

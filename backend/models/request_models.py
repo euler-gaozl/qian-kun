@@ -90,3 +90,38 @@ class BacktestRequest(BaseModel):
             if v <= values['start_date']:
                 raise ValueError('结束日期必须晚于开始日期')
         return v
+
+
+class AIAnalysisRequest(BaseModel):
+    """AI分析请求模型"""
+    symbol: str = Field(..., description="品种代码，如 rb（螺纹钢）、cf（棉花）")
+    contract: str = Field(..., description="合约代码，如 2501、2601")
+    period: str = Field(default="1d", description="K线周期，如 5m, 15m, 30m, 60m, 120m, 240m, 1d, 2d")
+    query: Optional[str] = Field(None, description="用户的分析需求，如'分析当前走势和支撑阻力位'")
+    
+    @validator('symbol')
+    def validate_symbol(cls, v):
+        """验证并规范化品种代码"""
+        symbol_info = MarketInfo.get_symbol_info(v)
+        if not symbol_info:
+            raise ValueError(f'不支持的品种代码: {v}')
+        # 中金所品种保持大写，其他交易所品种转为小写
+        if symbol_info.get('exchange') == 'CFFEX':
+            return v.upper()
+        else:
+            return v.lower()
+    
+    @validator('period')
+    def validate_period(cls, v):
+        """验证周期格式"""
+        valid_periods = ['5m', '15m', '30m', '60m', '120m', '240m', '1d', '2d']
+        if v not in valid_periods:
+            raise ValueError(f'周期必须是以下之一: {", ".join(valid_periods)}')
+        return v
+    
+    @validator('contract')
+    def validate_contract(cls, v):
+        """验证合约格式（4位数字）"""
+        if not v.isdigit() or len(v) != 4:
+            raise ValueError('合约必须是4位数字，如 2501')
+        return v

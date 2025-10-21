@@ -48,26 +48,43 @@ if [ ! -f "backend/requirements.txt" ]; then
     exit 1
 fi
 
-# 检查 Python 虚拟环境
-VENV_EXISTS=false
-if [ -d "venv" ]; then
-    source venv/bin/activate
-    VENV_EXISTS=true
-elif [ -d ".venv" ]; then
-    source .venv/bin/activate
-    VENV_EXISTS=true
-fi
+# ==========================================
+# 智能虚拟环境检测
+# ==========================================
+# 虚拟环境检测说明：
+# 1. 如果当前已在虚拟环境中（如手动激活的venv），直接使用
+# 2. 如果项目中存在 backend/venv，激活并使用
+# 3. 如果都不存在，创建新的虚拟环境
+# ==========================================
 
-# 如果虚拟环境不存在,创建并安装依赖
-if [ "$VENV_EXISTS" = false ]; then
-    echo "📦 首次运行: 创建Python虚拟环境..."
-    python3 -m venv venv
-    source venv/bin/activate
+VENV_EXISTS=false
+NEED_INSTALL_DEPS=false
+
+# 检测是否已在虚拟环境中
+if [ -n "$VIRTUAL_ENV" ]; then
+    echo "✅ 检测到已在虚拟环境中: $VIRTUAL_ENV"
+    echo "📦 使用当前虚拟环境"
+    VENV_EXISTS=true
+# 检测项目中是否已有虚拟环境
+elif [ -d "backend/venv" ]; then
+    echo "✅ 检测到项目虚拟环境: backend/venv"
+    echo "🔄 激活虚拟环境..."
+    source backend/venv/bin/activate
+    VENV_EXISTS=true
+# 创建新的虚拟环境
+else
+    echo "📦 未检测到虚拟环境，创建新环境..."
+    python3 -m venv backend/venv
+    source backend/venv/bin/activate
+    VENV_EXISTS=true
+    NEED_INSTALL_DEPS=true
     echo "📦 安装后端依赖..."
     pip install -q -r backend/requirements.txt
     echo "✅ 后端依赖安装完成"
-else
-    # 虚拟环境存在,检查是否需要更新依赖
+fi
+
+# 检查依赖是否需要更新（仅当虚拟环境已存在且不是新建时）
+if [ "$VENV_EXISTS" = true ] && [ "$NEED_INSTALL_DEPS" = false ]; then
     # 通过比较requirements.txt修改时间和标记文件来判断
     DEPS_MARKER=".deps_installed"
     if [ ! -f "$DEPS_MARKER" ] || [ "backend/requirements.txt" -nt "$DEPS_MARKER" ]; then

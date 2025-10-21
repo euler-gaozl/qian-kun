@@ -12,7 +12,6 @@ class RealtimeStrategyResponse(BaseModel):
     price: float = Field(..., description="建议操作价格")
     timestamp: str = Field(..., description="信号生成时间")
     ma_value: Optional[float] = Field(None, description="当前MA值")
-    signal_strength: Optional[str] = Field(None, description="信号强度")
     close_price: Optional[float] = Field(None, description="建议平仓价")
 
 
@@ -66,3 +65,14 @@ class ErrorResponse(BaseModel):
     message: str = Field(..., description="错误消息")
     details: Optional[Dict[str, Any]] = Field(None, description="错误详情")
     timestamp: str = Field(default_factory=lambda: datetime.now().isoformat())
+
+
+class AIAnalysisResponse(BaseModel):
+    """AI分析响应模型"""
+    success: bool = Field(..., description="分析是否成功")
+    symbol: str = Field(..., description="合约代码")
+    period: str = Field(..., description="K线周期")
+    analysis: str = Field(..., description="AI分析结果")
+    kline_count: int = Field(..., description="分析的K线数量")
+    timestamp: str = Field(default_factory=lambda: datetime.now().isoformat(), description="分析时间")
+    error: Optional[str] = Field(None, description="错误信息（如果有）")

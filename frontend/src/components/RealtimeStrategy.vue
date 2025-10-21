@@ -89,11 +89,6 @@
         <el-descriptions-item label="MA值">
           {{ result.ma_value ? result.ma_value.toFixed(2) : '-' }}
         </el-descriptions-item>
-        <el-descriptions-item label="信号强度">
-          <el-tag :type="getStrengthType(result.signal_strength)">
-            {{ result.signal_strength || '-' }}
-          </el-tag>
-        </el-descriptions-item>
         <el-descriptions-item label="生成时间" :span="2">
           {{ formatTime(result.timestamp) }}
         </el-descriptions-item>
@@ -294,16 +289,6 @@ const getActionType = (action) => {
     '观望': 'info'
   }
   return map[action] || 'info'
-}
-
-// 获取信号强度标签样式
-const getStrengthType = (strength) => {
-  const map = {
-    '强': 'success',
-    '中': 'warning',
-    '弱': 'info'
-  }
-  return map[strength] || 'info'
 }
 
 // 格式化时间
