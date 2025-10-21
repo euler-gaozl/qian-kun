@@ -360,8 +360,26 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   if (request.params.name === "query_realtime_strategy") {
     try {
+      // 容错处理：如果参数是字符串，先解析成对象
+      let args = request.params.arguments;
+      if (typeof args === 'string') {
+        try {
+          args = JSON.parse(args);
+        } catch (parseError) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `参数格式错误: 无法解析JSON字符串 - ${parseError}`,
+              },
+            ],
+            isError: true,
+          };
+        }
+      }
+      
       // 验证输入参数
-      const parsed = BatchQuerySchema.safeParse(request.params.arguments);
+      const parsed = BatchQuerySchema.safeParse(args);
       
       if (!parsed.success) {
         return {
@@ -404,8 +422,26 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
   if (request.params.name === "analyze_strategy_with_ai") {
     try {
+      // 容错处理：如果参数是字符串，先解析成对象
+      let args = request.params.arguments;
+      if (typeof args === 'string') {
+        try {
+          args = JSON.parse(args);
+        } catch (parseError) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: `参数格式错误: 无法解析JSON字符串 - ${parseError}`,
+              },
+            ],
+            isError: true,
+          };
+        }
+      }
+      
       // 验证输入参数
-      const parsed = AIAnalysisSchema.safeParse(request.params.arguments);
+      const parsed = AIAnalysisSchema.safeParse(args);
       
       if (!parsed.success) {
         return {
